@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Websocket Chat</title>
+</head>
+<body>
+
+	<h1>Websocket Chat</h1>
+
+	<input id="sendTxt" class="hello" type="text"/>
+	<button id="sendBtn">Send</button>
+	<div id="recv"></div>
+
+	<script type="text/javascript">
+		var websocket= new WebSocket("ws://localhost:3000/");
+		websocket.onopen = function(){
+			console.log("websocket open");
+			document.getElementById("recv").innerHTML = "connected";
+		}
+
+		websocket.onclose = function(){
+			console.log('websocket close');
+		}
+
+		websocket.onmessage = function(e){
+			console.log(e.data);
+			document.getElementById('recv').innerHTML = e.data;
+		}
+
+		document.getElementById('sendBtn').onclick = function(){
+			
+			var txt = document.getElementById('sendTxt').value;
+			websocket.send(txt);
+		}
+
+
+
+	</script>
+
+</body>
+</html>
