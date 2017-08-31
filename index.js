@@ -1,21 +1,25 @@
-var ws = require("nodejs-websocket")
+var app = require('http').createServer()
+var io = require('socket.io')(app)
 var PORT = 3000
 
-// Scream server example: "hi" -> "HI!!!"
-var server = ws.createServer(function (conn) {
-	console.log("New connection")
-	conn.on("text", function (str) {
-		console.log("Received "+str)
-		conn.sendText(str)
-	})
-	conn.on("close", function (code, reason) {
-		console.log("Connection closed")
+var clientCount = 0
+
+app.listen(PORT)
+
+io.on('connection',function(socket){
+	clientCount++
+	socket.nickname = 'user' + clientCount
+	io.emit('enter', socket.nickname + ' is here ')
+
+	socket.on('message', function(str){
+		io.emit('message', socket.nickname + ' says: ' + str)
 	})
 
-	conn.on('error', function(err){
-		console.log("handle err")
-		console.log(err)
+	socket.on('disconnect', function(){
+		io.emit('leave', socket.nickname + ' just left ')
 	})
-}).listen(PORT)
+})
+
 
 console.log("websocket server listen on port" + PORT)
+
