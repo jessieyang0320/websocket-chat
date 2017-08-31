@@ -1,45 +1,25 @@
-var ws = require("nodejs-websocket")
+var app = require('http').createServer()
+var io = require('socket.io')(app)
 var PORT = 3000
 
 var clientCount = 0
 
-// Scream server example: "hi" -> "HI!!!"
-var server = ws.createServer(function (conn) {
-	console.log("New connection")
+app.listen(PORT)
 
+io.on('connection',function(socket){
 	clientCount++
-	conn.nickname = 'user' + clientCount
-	var mes = {}
-	mes.type = "enter"
-	mes.data = conn.nickname + 'is here'
-	broadcast(JSON.stringify(mes))
+	socket.nickname = 'user' + clientCount
+	io.emit('enter', socket.nickname + ' is here ')
 
-	conn.on("text", function (str) {
-		console.log("Received "+str)
-		var mes = {}
-		mes.type = "message"
-		mes.data = conn.nickname + ' says: ' + str
-		broadcast(JSON.stringify(mes))
-		
-	})
-	conn.on("close", function (code, reason) {
-		console.log("Connection closed")
-		var mes = {}
-		mes.type = "leave"
-		mes.data = conn.nickname + 'left'
-		broadcast(JSON.stringify(mes))
+	socket.on('message', function(str){
+		io.emit('message', socket.nickname + ' says: ' + str)
 	})
 
-	conn.on('error', function(err){
-		console.log("handle err")
-		console.log(err)
+	socket.on('disconnect', function(){
+		io.emit('leave', socket.nickname + ' just left ')
 	})
-}).listen(PORT)
+})
+
 
 console.log("websocket server listen on port" + PORT)
 
-function broadcast(str){
-	server.connections.forEach(function(connection){
-		connection.sendText(str)
-	})
-}
